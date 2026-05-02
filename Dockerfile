@@ -65,6 +65,7 @@ COPY server.py /app/server.py
 COPY templates/ /app/templates/
 COPY start.sh /app/start.sh
 COPY SOUL.md /app/SOUL.md
+COPY skills/ /app/skills/
 RUN chmod +x /app/start.sh
 
 ENV HOME=/data

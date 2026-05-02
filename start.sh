@@ -13,6 +13,18 @@ mkdir -p /data/.hermes/cron /data/.hermes/sessions /data/.hermes/logs \
 # so edits to SOUL.md in this repo take effect on redeploy without manual sync.
 [ -f /app/SOUL.md ] && cp /app/SOUL.md /data/.hermes/SOUL.md
 
+# skills/: repo is source of truth — sync each repo skill into the volume on
+# every boot. Uses rsync semantics via cp -R: existing volume-only skills
+# (e.g. agent-generated via skill_manage) are preserved, but repo skills
+# always reflect the latest committed version.
+if [ -d /app/skills ]; then
+  for skill_dir in /app/skills/*/; do
+    skill_name=$(basename "$skill_dir")
+    rm -rf "/data/.hermes/skills/$skill_name"
+    cp -R "$skill_dir" "/data/.hermes/skills/$skill_name"
+  done
+fi
+
 if [ ! -f /data/.hermes/config.yaml ] && [ -f /opt/hermes-agent/cli-config.yaml.example ]; then
   cp /opt/hermes-agent/cli-config.yaml.example /data/.hermes/config.yaml
 fi
