@@ -9,6 +9,9 @@ mkdir -p /data/.hermes/cron /data/.hermes/sessions /data/.hermes/logs \
          /data/.hermes/memories /data/.hermes/skills /data/.hermes/pairing \
          /data/.hermes/hooks /data/.hermes/image_cache /data/.hermes/audio_cache \
          /data/.hermes/workspace
+# SOUL.md: repo is source of truth — overwrite the volume copy on every boot
+# so edits to SOUL.md in this repo take effect on redeploy without manual sync.
+[ -f /app/SOUL.md ] && cp /app/SOUL.md /data/.hermes/SOUL.md
 
 if [ ! -f /data/.hermes/config.yaml ] && [ -f /opt/hermes-agent/cli-config.yaml.example ]; then
   cp /opt/hermes-agent/cli-config.yaml.example /data/.hermes/config.yaml
