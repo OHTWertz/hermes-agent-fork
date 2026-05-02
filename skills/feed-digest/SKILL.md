@@ -1,164 +1,179 @@
 ---
 name: feed-digest
-description: Daily AI engineering digest mixing long-form signal (blogs, HN, Medium), social-media pulse (Bluesky, X-when-feasible, Reddit AI subs), and personality discovery (new voices Tyler hasn't seen). Output is a Discord message Tyler can scan in 2 minutes and decide what to dig into.
-version: 0.2
+description: Daily AI engineering digest for Tyler's coffee read (~15-30 min). Editorial spine is AINews (Latent Space's daily meta-aggregator, which already does the heavy lifting). Adds personal relevance lens, project-context overlay, Reddit-driven Pulse for meme/cultural-vitamin coverage, and Discovery for new voices to follow on Bluesky. X/Twitter is out of scope — no working access in 2026.
+version: 0.3
 when_to_use: |
   Trigger when Tyler asks for a daily/morning digest. Phrases:
-    - "what's new"
+    - "what's new" / "what's happening in AI today"
     - "morning digest" / "give me the digest" / "the digest"
     - "what should I read today"
     - "summarize the feeds"
-    - "what's happening in AI today"
 
-  Frequency: roughly daily, mornings. Skill has state (tracks voices already
-  surfaced) so don't worry about repetition across days.
+  Frequency: roughly daily, mornings. Length is variable — coffee-read scope
+  (~15-30 min of reading) is the target, not a hard word cap. When the day is
+  big, the digest is bigger; when quiet, smaller.
 ---
 
 # Feed Digest
 
-Daily AI engineering scan. Three tiers, mixed in a single Discord message.
+Daily AI engineering scan with three tiers: **Spine** (curated long-form, AINews-led), **Pulse** (Reddit-driven cultural vitamin + memes + side projects), **Discovery** (new voices for Tyler to follow, scoped by saturation).
 
-## Tier 1 — Signal (long-form, ~60% of digest)
+For deep context on design decisions, scope evolution, and future ambitions, see `Personal/AI/Feed Digest Plan.md`. This SKILL.md is the prompt; the plan doc is the rationale.
 
-Reliable RSS-based long-form. Always include if items are fresh.
+## Tier 1 — Spine (editorial backbone, ~50% of digest)
 
-- [Simon Willison](https://simonwillison.net/atom/everything/) — practitioner notes, Anthropic/OpenAI/Google watch
-- [Latent Space](https://www.latent.space/feed) — interviews, scene-of-the-week
-- [Interconnects (Nathan Lambert)](https://www.interconnects.ai/feed) — model release analysis, RL/post-training depth
-- [One Useful Thing (Ethan Mollick)](https://www.oneusefulthing.org/feed) — practical applied AI, education-flavored
-- [Eugene Yan](https://eugeneyan.com/rss) — applied ML writing, evals
-- [Hamel Husain](https://hamel.dev/feed.xml) — fine-tuning, evals, consultant-honest takes
-- [Sebastian Raschka](https://magazine.sebastianraschka.com/feed) — research breakdowns, accessible math
-- [HN AI search RSS](https://hnrss.org/newest?q=AI+OR+LLM+OR+agent&points=50) — top AI-tagged stories with ≥50 points
+AINews is the primary spine. It's a daily-ish meta-aggregator by Latent Space (swyx) that already scans X, Discord, Reddit, blogs, and papers, and synthesizes the most important AI engineering happenings of the day. Don't try to recreate this — forward and overlay.
 
-## Tier 2 — Pulse (short-form / social, ~30% of digest)
+- **AINews / Latent Space**: https://www.latent.space/feed
+- **Simon Willison's Weblog**: https://simonwillison.net/atom/everything/ (practitioner depth AINews under-quotes)
+- **HN AI search**: https://hnrss.org/newest?q=AI+OR+LLM+OR+agent&points=50 (top AI-tagged posts ≥50 points)
 
-Trending discussion + shitposts + hot takes. Mix of platforms.
+### How to use AINews
 
-- **Bluesky** — Tyler's handle: `@ohhheytyler.bsky.social`. **His follow list is sparse and growing.** Don't rely solely on his home feed. Strategy:
-    1. Fetch his home feed (`bsky.app/profile/ohhheytyler.bsky.social/feed.rss` or via AT Protocol public API at `public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor=ohhheytyler.bsky.social`) — small but real signal
-    2. Fetch AI engineering starter packs — these are publicly curated follow lists. Search for ones tagged "AI engineering", "ML", "agents". Pull trending posts from accounts in those packs even though Tyler doesn't follow them yet
-    3. Fetch posts via AT Protocol search by hashtag — `#aiengineering`, `#llm`, `#agents`, `#mlops` — last 24h, top by engagement
-    4. The Discovery tier (Tier 3 below) **directly serves the goal of growing Tyler's follow list** — surface 1-2 new voices per digest with the explicit framing of "would it be worth following X?"
-- **Reddit r/LocalLLaMA RSS**: https://www.reddit.com/r/LocalLLaMA/.rss — local-AI community, lots of meme/shitpost energy mixed with serious work
-- **Reddit r/MachineLearning RSS**: https://www.reddit.com/r/MachineLearning/.rss — broader research-flavored discussion
-- **X / Twitter**: **out of scope for v0.2**. Tyler doesn't have a good answer for the X gap; neither do I. Reality:
-    - X scrapers (Nitter, third-party APIs) are unreliable or dead in 2026
-    - Paid X API ($100+/mo) is overkill for Phase 0
-    - ~60% of cultural-vitamin voices (Dax Raad, Ken Wheeler, etc.) cross-post to Bluesky, so the Bluesky path covers most of what would otherwise be lost
-    - Critical X threads still surface via blog quotes, Bluesky cross-references, and HN. Links are useful even when the thread itself isn't fetchable
-    - Revisit in Phase 1 if Bluesky-only signal proves insufficient. Until then, accept the gap; don't hack around it
+1. Find the most recent AINews edition (last 24-48h)
+2. Identify 2-4 themes from it that match Tyler's interests:
+   - **AI engineering core**: agents, LLMs, evals, tooling, infra, model behavior
+   - **Local AI / homelab crossover**: anything from local-inference / self-hosted side
+   - **Project-relevant**: anything that intersects EdgeGrain (3D rendering with AI, prompt eval harnesses, AI-driven CAD), the homelab plan, or AI engineering portfolio work
+3. Synthesize those themes in 2-3 sentences each, with inline links
+4. **Don't restate AINews verbatim** — the value-add is the relevance lens, not transcription
 
-Cultural vitamin accounts to surface from when they post anything in the last 24h (these are the "fun side of the field" voices Tyler explicitly wants in the mix):
+### Recency strictness
 
-- Dax Raad (`@thdxr` on X, also on Bluesky) — OpenCode, agentic coding, reliable shitposting
-- Ken Wheeler (`@ken_wheeler` on X / Bluesky) — frontend/AI bridge, sharp memes
-- Theo (`@theo` on X / `@t3dotgg`) — opinionated, loud, occasionally informative
-- Geoffrey Huntley (`@GeoffreyHuntley` X/Bluesky) — AI coding agents, builds in public
-- Swyx (`@swyx` X/Bluesky) — Latent Space, AI Engineer
-- Simon Willison (already in Tier 1 long-form, but his short posts also count)
+**Hard requirement**: every item surfaced in Spine must have a publish date within the last 48h (24h preferred; 48h acceptable for AINews's own edition since it's daily-ish but sometimes skips a day). Reject older items regardless of points or visibility.
 
-Surface 1-2 of these per digest if they posted; don't force all of them.
+HN's high-points list is **not** a recency proxy — verify the published-at field on each item.
 
-## Tier 3 — Discovery (new voices, ~10% of digest, conditional)
+## Tier 2 — Pulse (Reddit + GitHub + Bluesky, ~35% of digest)
 
-Goal: surface AI engineering personalities Tyler hasn't seen before, *signal-capped*. Stop pushing new follows once Tyler's saturation point is reached.
+Cultural vitamin: memes, hot takes, fun side projects, "what people are actually building right now." Required tier — must surface at least 1-2 items per digest. If genuinely nothing fresh, say so explicitly (`Quiet pulse today`); never silently omit.
 
-**Discovery is doubly important right now** because Tyler's Bluesky follow graph is sparse — Discovery is the active mechanism for growing it. Bias toward voices that are active on Bluesky (so Tyler can act on the suggestion immediately by following) over X-only voices (which he can't easily act on anyway).
+### Sources
 
-### How to identify a discovery candidate
+- **Reddit r/LocalLLaMA**: https://www.reddit.com/r/LocalLLaMA/.rss — local-AI community, mix of serious and meme
+- **Reddit r/ChatGPT**: https://www.reddit.com/r/ChatGPT/.rss — meme-heavy, captures cultural pulse
+- **Reddit r/singularity**: https://www.reddit.com/r/singularity/.rss — meme-heavy and divisive, but real signal on AI discourse temperature
+- **Reddit r/MachineLearning**: https://www.reddit.com/r/MachineLearning/.rss — research-flavored discussion (substance balance)
+- **HN Show HN AI-tagged**: https://hnrss.org/show?q=AI+OR+LLM+OR+agent — fun side projects, "I built this" energy
+- **GitHub trending** (scrape via execute_code): https://github.com/trending?since=daily&spoken_language_code=en — filter to repos tagged `topic:llm`, `topic:agent`, `topic:rag`, `topic:ai-agents`. Surface 1-2 if anything's actively trending.
+- **Bluesky curated authors** (via `public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor=<handle>`). Handles verified 2026-05-02 via `getProfile` API; most "*.bsky.social" pattern guesses returned squatters or unrelated people, so this list uses confirmed custom-domain handles where available:
+  - `thdxr.com` — Dax Raad (building opencode.ai, ~12k followers)
+  - `ghuntley.com` — Geoffrey Huntley (~1.8k followers)
+  - `swyx.io` — swyx / Latent Space (~8.8k followers)
+  - `simonwillison.net` — Simon Willison (~46k followers)
+  - `hamel.bsky.social` — Hamel Husain (evals.info, ~6.5k followers)
+
+  Ken Wheeler — confirmed X-only as of verification, no Bluesky presence found. Many React-era / X-native folks haven't migrated. Accept that some cultural-vitamin coverage is permanently degraded without X access.
+
+  For each verified author, fetch last 20 posts via the public author-feed endpoint (no auth needed). Filter to last 24h. Score for substance (not reposts). Surface 0-2 per digest if any have substance.
+
+### Pulse output rules
+
+- **Mix the sources** — don't surface 3 items all from r/ChatGPT. Aim for variety across Reddit / GitHub / Bluesky.
+- **Memes are valid content** — surface a funny tweet or an absurd repo if it captures the AI engineering temperature. The goal isn't gravitas; it's coffee-time vibes.
+- **No dry research links in Pulse** — those belong in Spine. Pulse is for the cultural side.
+
+### What's not available
+
+- **X / Twitter**: no working access. Confirmed — no scraper, no API access in budget. Many cultural-vitamin voices live on X primarily; Bluesky cross-posts cover ~60% of them. Accept the gap.
+
+## Tier 3 — Discovery (new voices to follow, conditional)
+
+Goal: surface AI engineering personalities Tyler hasn't seen before, signal-capped. Specifically serves the goal of growing his sparse Bluesky follow list.
+
+### Identifying a discovery candidate
 
 A voice is a discovery candidate if:
-1. They're quoted, reposted, or quote-replied by a Tier 1 or Tier 2 source in the last 24h
-2. Their post has substantive AI engineering content (not just news commentary)
-3. They are NOT in Tyler's known-voices memory (`voices/known/`)
-4. They are NOT in Tyler's dismissed-voices memory (`voices/dismissed/`)
-
-### How to track saturation
-
-Maintain memory under `voices/`:
-- `voices/known/<handle>` — voices Tyler has explicitly engaged with (followed, replied to, or said "yeah I follow them")
-- `voices/surfaced/<handle>` — voices the digest has already surfaced (so we don't re-surface them daily; surface again only if they have a *significantly* notable post weeks later)
-- `voices/dismissed/<handle>` — voices Tyler has explicitly told the agent to stop surfacing ("not interested in X")
+1. They're quoted, linked, or referenced by an AINews edition or a Tier 2 source in the last 24h
+2. Their content has substantive AI engineering value (not just news commentary)
+3. They are NOT in `voices/known/` memory
+4. They are NOT in `voices/dismissed/` memory
+5. **Bluesky-present voices are preferred** — Tyler can act on the suggestion immediately by following them
 
 ### Saturation rule
 
-**Stop including the Discovery section** when any of:
+Stop including the Discovery section when any of:
 - Tyler hasn't engaged with a discovered voice in the last 14 days (signal: discovery isn't landing)
-- More than 30 voices have been surfaced cumulatively without Tyler adopting any (signal: the well is dry or Tyler is saturated)
+- More than 30 voices have been surfaced cumulatively without Tyler adopting any (signal: well is dry or Tyler is saturated)
 - Tyler explicitly says "stop discovery" or similar
 
-In that case, the digest is just Tier 1 + Tier 2. The Discovery section reappears later if Tyler asks ("any new voices worth following?") or organically when a Tier 1 source quotes someone genuinely novel.
+When gated off, simply omit the section. Reappears later if Tyler asks ("any new voices worth following?") or organically when AINews quotes someone genuinely novel and Bluesky-present.
 
-### Discovery output format
+### Discovery memory state
+
+- `voices/known/<handle>` — explicitly engaged with (followed, replied to, told you about)
+- `voices/surfaced/<handle>` — already shown by digest (don't re-surface unless they post something significantly notable weeks later)
+- `voices/dismissed/<handle>` — Tyler explicitly told the agent to stop surfacing
+
+### Format
 
 When included, exactly 1-2 voices per digest:
 
 ```
 **Worth a follow check:**
-- [Handle Name (@handle)](link to platform): one-line characterization + link to the
-  specific post that surfaced them
+- [Handle Name (@handle.bsky.social)](link to bsky profile): one-line characterization +
+  link to the specific post that surfaced them
 ```
 
-## Procedure
+## Cross-day deduplication
 
-1. **Fetch all Tier 1 RSS feeds** (parallel where possible). Filter to items from the last 24h.
+Before composing, check `feed-digest/surfaced/<last-7-days>` memory namespace. Skip any URL or canonical headline that's been surfaced in the last 7 days. **Same story re-appearing daily is the #1 noise pattern** — strict dedup is non-negotiable.
 
-2. **Fetch Tier 2 sources** that are accessible. Bluesky public feeds via `bsky.app/profile/<handle>/rss` or AT Protocol public API. Reddit `.rss` endpoints. Skip X unless a Tier 1 source already linked an X thread (in which case the link is enough).
+After composing, write each surfaced item's URL + canonical headline to `feed-digest/surfaced/<today>`.
 
-3. **Score and cluster**:
-   - Score Tier 1 items for relevance to: AI engineering (LLMs, agents, evals, model releases, tooling, infra) and woodworking-business cross-overs (rare but include if they appear)
-   - Cluster by theme — don't go item-by-item; surface 2-4 themes max
-   - Pick 1-2 cultural-vitamin posts from the Tier 2 personality list if they posted
+Edge case: a *follow-up* story to something previously surfaced (e.g. "Anthropic responded to last week's leaked memo") is fine to include. Match on canonical headline, not loose subject overlap.
 
-4. **Discovery scan**: scan Tier 1 and Tier 2 fetches for candidate voices per the rules above. Apply saturation gate. If discovery surfaces a candidate, prepare the format.
+## Output format
 
-5. **Compose** the Discord message:
+Discord message. Variable length (no hard cap), tuned for ~15-30 min coffee-read.
 
-   ```
-   <N> items across <M> themes today.
+```
+<N> items across <M> themes today.
 
-   **<Theme 1 title>**
-   2-3 sentences synthesizing the long-form items in this theme. Inline links
-   to specific posts where relevant.
+**<Theme 1 from AINews>**
+2-3 sentences synthesizing. Inline links to specific posts.
 
-   **<Theme 2 title>**
-   ...
+**<Theme 2 from AINews>**
+...
 
-   **Pulse**
-   1-3 short blurbs from social/Reddit. Cultural-vitamin posts go here. 1-2 sentences each.
+**Pulse**
+1-3 items from Reddit / GitHub trending / Bluesky. Mix sources.
+Memes welcome. Short blurbs (1-2 sentences each).
 
-   **Worth a longer read:**
-   - [Specific post title](link) — why
-   - [Another](link) — why
+**Worth a longer read:**
+- [Specific post title](link) — why
+- [Another](link) — why
 
-   **Worth a follow check:** (omit this section if discovery is gated off)
-   - [@handle](link): characterization
-   ```
+**Worth a follow check:** (omit when saturation gate fires)
+- [@handle.bsky.social](link): characterization
+```
 
-6. **Update memory**:
-   - For any voice surfaced in Discovery, write to `voices/surfaced/<handle>` with timestamp
-   - For any voice surfaced in Pulse from the cultural-vitamin list, no memory write needed (already known-known)
+### Tone
 
-## Length and tone
+- Conversational, not breathless. No exclamation marks unless they're actually warranted.
+- Pulse should sound different from Spine — looser, more human. If a meme is funny, you can say it's funny.
+- Don't pad. If a section is empty (`Quiet pulse today`, `Quiet on long-form`), say so. The user trusts honesty more than artificial fullness.
+- Don't editorialize beyond the relevance lens. Surface, summarize, link. Tyler decides.
 
-- Total under ~600 words (longer than original since Pulse adds material)
-- Discord markdown: `**bold**` for section titles, inline `[link text](url)`. No nested headers, no tables, no emoji headers.
-- Tone: conversational and confident. Not breathless. Tyler doesn't need exclamation marks.
-- If a section is empty (e.g. quiet morning, no fresh long-form), say so explicitly: `Quiet on the long-form side today.` Don't pad.
+## Hard rules / pitfalls
 
-## Pitfalls
-
-- **Don't list every item.** Synthesis, not enumeration. If 6 items in a theme, pick the 2 worth surfacing.
-- **Don't summarize the same story twice** if it appears in multiple feeds. Pick the better-written source.
-- **Don't fabricate links.** If a fetch failed, omit that source for the day and note `(Bluesky fetch unavailable today)` if it materially affects the digest.
-- **Don't push discovery if the saturation rule fires.** Respect Tyler's "stop forcing follows" preference.
-- **Don't include news commentary that lacks AI engineering substance** — "OpenAI announced X" without analysis is just a press release, skip.
-- **Don't cluster a single item under its own theme.** A theme needs ≥2 items, or it's just a callout.
+- **Recency**: every item must be within last 24h (48h max for AINews's own edition). HN points are not a recency proxy.
+- **Dedup**: check `feed-digest/surfaced/*` memory; skip anything seen in last 7 days unless it's a true follow-up story.
+- **Pulse must surface ≥1 item or explicitly say it's quiet**. Never silently omit.
+- **Don't fabricate links**. If a fetch failed, omit that source for the day and note it (`Bluesky fetch unavailable today`) so the user knows whether the source had nothing or whether the agent couldn't reach it.
+- **Don't summarize the same story twice across tiers**. If AINews and r/LocalLLaMA both have the Uber story, pick the better-written source (likely AINews) and skip the other.
+- **Don't include news commentary that lacks AI engineering substance** — "OpenAI announced X" without analysis is just a press release; skip.
 
 ## Verification
 
 - Tyler reads the digest most mornings (≥4 days/week by week 2)
 - At least one "Worth a longer read" link clicked per week
-- Discovery section either: produces voices Tyler engages with, OR self-quiets per the saturation rule. The failure mode is "discovery keeps surfacing voices Tyler ignores indefinitely" — that's the rule's job to prevent.
+- Pulse genuinely lands as cultural-vitamin content — Tyler doesn't say "the memes are weak"
+- Discovery either produces voices Tyler engages with, OR self-quiets per the saturation rule. The failure mode is "discovery keeps surfacing voices Tyler ignores" — that's the rule's job to prevent.
 - Tyler doesn't say "this digest is noise" or stop asking for it. If he does, retune filtering or cull a feed.
+
+## When in doubt
+
+When a source produces nothing or is unreachable, **say so explicitly** rather than silently dropping. The user reading the digest needs to know whether silence means "nothing happened" or "fetch failed" — these are very different states.
+
+When uncertain about an item's relevance, lean toward including it in Pulse rather than Spine. Pulse tolerates more variance; Spine should be high-confidence.
